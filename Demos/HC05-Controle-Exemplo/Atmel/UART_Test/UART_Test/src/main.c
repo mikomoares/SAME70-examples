@@ -110,10 +110,10 @@ int hc05_server_init(void) {
 	char buffer_rx[128];
 	usart_send_command(USART0, buffer_rx, 1000, "AT", 1000);
 	usart_send_command(USART0, buffer_rx, 1000, "AT", 1000);	
-	usart_send_command(USART0, buffer_rx, 1000, "AT+NAMEMarcoMello", 1000);		//AT+NAMEnomedesejado
+	usart_send_command(USART0, buffer_rx, 1000, "AT+NAMEPControl", 1000);		//AT+NAMEnomedesejado
 	usart_log("hc05_server_init", buffer_rx);
 	usart_send_command(USART0, buffer_rx, 1000, "AT", 1000);
-	usart_send_command(USART0, buffer_rx, 1000, "AT+PIN0000", 1000);			//AT+PINpindesejado	
+	usart_send_command(USART0, buffer_rx, 1000, "AT+PIN2637", 1000);			//AT+PINpindesejado	
 	usart_log("hc05_server_init", buffer_rx);
 }
 

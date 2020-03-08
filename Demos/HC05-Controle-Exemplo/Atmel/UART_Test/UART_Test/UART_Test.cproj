@@ -262,7 +262,8 @@
         <board id="board.same70_xplained" value="Add" config="" content-id="Atmel.ASF" />
       </framework-data>
     </AsfFrameworkConfig>
-    <avrtool>com.atmel.avrdbg.tool.edbg</avrtool>
+    <avrtool>
+    </avrtool>
     <avrtoolserialnumber>ATML2637010000000013</avrtoolserialnumber>
     <avrdeviceexpectedsignature>0xA1020E01</avrdeviceexpectedsignature>
     <custom>
@@ -299,7 +300,8 @@
       <ToolNumber>ATML2637010000000013</ToolNumber>
       <ToolName>EDBG</ToolName>
     </com_atmel_avrdbg_tool_edbg>
-    <avrtoolinterface>SWD</avrtoolinterface>
+    <avrtoolinterface>
+    </avrtoolinterface>
     <avrtoolinterfaceclock>2000000</avrtoolinterfaceclock>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
