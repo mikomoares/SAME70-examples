@@ -8,6 +8,7 @@
 #define LED_PIO        PIOA
 #define LED_PIN		   0
 #define LED_PIN_MASK   (1<<LED_PIN)
+
 #define LED1_PIO_ID	   ID_PIOC
 #define LED1_PIO        PIOC
 #define LED1_PIN		   8
@@ -89,6 +90,7 @@ void RTC_Handler(void){
 	if ((ul_status & RTC_SR_ALARM) == RTC_SR_ALARM){
 		rtc_clear_status(RTC, RTC_SCCR_ALRCLR);
 		pin_toggle(LED1_PIO, LED1_PIN_MASK);
+		flag_rtc = true;
 	}
 
 	rtc_clear_status(RTC, RTC_SCCR_ACKCLR);
@@ -253,7 +255,7 @@ int main (void)
 		  /*
 		   * IRQ apos 4s -> 8*0.5
 		   */
-		  uint16_t pllPreScale = (int) (((float) 32768) / 4.0);
+		  uint16_t pllPreScale = (int) (((float) 32768) / 2.0);
 		  uint32_t irqRTTvalue = 8;
       
 		  // reinicia RTT para gerar um novo IRQ
