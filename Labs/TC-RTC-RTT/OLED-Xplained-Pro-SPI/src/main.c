@@ -19,7 +19,13 @@
 #define LED2_PIN       30
 #define LED2_PIN_MASK  (1 << LED2_PIN)
 
-volatile char flag_tc = 0;
+#define LED3_PIO_ID        ID_PIOB
+#define LED3_PIO           PIOB
+#define LED3_PIN		   2
+#define LED3_PIN_MASK  (1 << LED3_PIN)
+
+volatile char flag_tc = 1;
+volatile char flag_tc2 = 0;
 volatile Bool f_rtt_alarme = false;
 volatile char flag_rtc = 0;
 
@@ -58,7 +64,28 @@ void TC1_Handler(void){
 	UNUSED(ul_dummy);
 
 	/** Muda o estado do LED */
-	flag_tc = 1;
+	if (flag_tc){
+		pin_toggle(LED_PIO,LED_PIN_MASK);
+	    flag_tc = 1;
+	}
+}
+
+void TC2_Handler(void){
+	volatile uint32_t ul_dummy;
+
+	/****************************************************************
+	* Devemos indicar ao TC que a interrupção foi satisfeita.
+	******************************************************************/
+	ul_dummy = tc_get_status(TC1, 3);
+
+	/* Avoid compiler warning */
+	UNUSED(ul_dummy);
+
+	/** Muda o estado do LED */
+	if (flag_tc2){
+		pin_toggle(LED3_PIO,LED3_PIN_MASK);
+	    flag_tc2 = 1;
+	}
 }
 
 void RTT_Handler(void)
@@ -192,6 +219,9 @@ void TC_init(Tc * TC, int ID_TC, int TC_CHANNEL, int freq){
 	uint32_t ul_tcclks;
 	uint32_t ul_sysclk = sysclk_get_cpu_hz();
 
+	uint32_t channel = 1;
+
+
 	/* Configura o PMC */
 	/* O TimerCounter é meio confuso
 	o uC possui 3 TCs, cada TC possui 3 canais
@@ -229,6 +259,7 @@ int main (void)
 	LED_init(0);
 	LED1_init(0);
 	TC_init(TC0, ID_TC1, 1, 4);
+	TC_init(TC1, ID_TC3, 3, 5);
 
 	f_rtt_alarme = true;
 
@@ -247,10 +278,10 @@ int main (void)
 
   /* Insert application code here, after the board has been initialized. */
 	while(1) {
-		if(flag_tc){
-			pisca_led(1,10);
-			flag_tc = 0;
-		}
+		//if(flag_tc){
+			//pisca_led(1,10);
+			//flag_tc = 0;
+		//}
 		if (f_rtt_alarme){
 		  /*
 		   * IRQ apos 4s -> 8*0.5
