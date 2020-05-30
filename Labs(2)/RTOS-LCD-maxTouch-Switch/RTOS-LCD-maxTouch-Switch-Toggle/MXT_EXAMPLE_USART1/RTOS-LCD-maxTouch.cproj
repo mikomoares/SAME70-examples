@@ -752,6 +752,7 @@
     <Folder Include="src\ASF\thirdparty\freertos\freertos-8.2.3\Source\portable\MemMang\" />
     <Folder Include="src\config\" />
     <Folder Include="src\maxTouch" />
+    <Folder Include="src\Icons" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\ASF\sam\drivers\afec\afec.h">
@@ -773,6 +774,21 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\digital521.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Icons\dog.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Icons\maca.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Icons\milho.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Icons\pipoca.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Icons\sanfona.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\maxTouch\maxTouch.c">

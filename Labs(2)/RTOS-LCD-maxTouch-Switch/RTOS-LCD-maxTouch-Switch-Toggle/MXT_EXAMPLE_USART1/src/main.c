@@ -7,12 +7,32 @@
 #include "maxTouch/maxTouch.h"
 #include "tfont.h"
 #include "digital521.h"
+#include "icons/pipoca.h"
+#include "icons/dog.h"
+#include "icons/milho.h"
+#include "icons/sanfona.h"
+#include "icons/maca.h"
+
+typedef struct {
+	uint32_t width;     // largura (px)
+	uint32_t height;    // altura  (px)
+	uint32_t x;         // posicao x
+	uint32_t y;         // posicao y
+	uint32_t status;
+	void (*callback)(t_but);
+	tImage image;
+} t_but;
 
 /************************************************************************/
 /* prototypes                                                           */
 /************************************************************************/
-void but1_callback(void);
+void but0_callback(t_but *but);
+void but1_callback(t_but *but);
+void but2_callback(t_but *but);
+void but3_callback(t_but *but);
+void but5_callback(t_but *but);
 
+void draw_button_new(t_but but);
 
 /************************************************************************/
 /* LCD + TOUCH                                                          */
@@ -45,12 +65,42 @@ typedef struct {
   uint y;
 } touchData;
 
+
+	
+
+
 QueueHandle_t xQueueTouch;
+
+
 
 /************************************************************************/
 /* handler/callbacks                                                    */
 /************************************************************************/
 
+void but0_callback(t_but *but){
+	but->status = !but->status;
+	draw_button_new(*but);
+
+}
+void but1_callback(t_but *but){
+	but->status = !but->status;
+	draw_button_new(*but);
+}
+
+void but2_callback(t_but *but){
+	but->status = !but->status;
+	draw_button_new(*but);
+}
+
+void but3_callback(t_but *but){
+	but->status = !but->status;
+	draw_button_new(*but);
+}
+
+void but4_callback(t_but *but){
+	but->status = !but->status;
+	draw_button_new(*but);
+}
 
 /************************************************************************/
 /* RTOS hooks                                                           */
@@ -173,6 +223,33 @@ void font_draw_text(tFont *font, const char *text, int x, int y, int spacing) {
   }
 }
 
+void draw_button_new(t_but but){
+	if(but.status){
+		// 		color = but.colorOn;
+		ili9488_set_foreground_color(COLOR_CONVERT(COLOR_WHITE));
+		ili9488_draw_filled_rectangle(but.x-but.width/2, but.y-but.height/2,
+		but.x+but.width/2, but.y+but.height/2);
+		ili9488_draw_pixmap(but.x-but.width/2, but.y-but.height/2, but.image.width, but.image.height, but.image.data);
+		} else {
+		ili9488_set_foreground_color(COLOR_CONVERT(COLOR_BLACK));
+		ili9488_draw_filled_rectangle(but.x-but.width/2, but.y-but.height/2,
+		but.x+but.width/2, but.y+but.height/2);
+	}
+	
+}
+
+int process_touch(t_but botoes[], touchData touch){
+	for(int i = 0; i < sizeof(botoes); i++){
+		if((touch.y > (botoes[i].y- botoes[i].height/2)) && (touch.y < (botoes[i].y + botoes[i].height/2))){
+			if((touch.x > (botoes[i].x - botoes[i].width/2)) && (touch.x < (botoes[i].x + botoes[i].width/2))){
+				return i;
+			}
+		}
+	}
+	return -1;
+
+}
+
 void mxt_handler(struct mxt_device *device, uint *x, uint *y)
 {
   /* USART tx buffer initialized to 0 */
@@ -242,8 +319,28 @@ void task_lcd(void){
   xQueueTouch = xQueueCreate( 10, sizeof( touchData ) );
   configure_lcd();
   
+   t_but but0= {.width = 120, .height = 75,
+    .x = ILI9488_LCD_WIDTH/2, .y = ILI9488_LCD_HEIGHT/2, .status = 1, .callback = &but0_callback, .image = milho };
+   t_but but1= {.width = 120, .height = 75,
+    .x = ILI9488_LCD_WIDTH/2, .y = ILI9488_LCD_HEIGHT/2+80, .status = 1, .callback = &but1_callback, .image = pipoca };
+   t_but but2= {.width = 120, .height = 75,
+    .x = ILI9488_LCD_WIDTH/2, .y = ILI9488_LCD_HEIGHT/2-80, .status = 1, .callback = &but2_callback, .image = dog };
+   t_but but3= {.width = 120, .height = 75,
+   .x = ILI9488_LCD_WIDTH/2, .y = ILI9488_LCD_HEIGHT/2-160, .status = 1, .callback = &but3_callback, .image = maca };
+   t_but but4= {.width = 120, .height = 75,
+   .x = ILI9488_LCD_WIDTH/2, .y = ILI9488_LCD_HEIGHT/2+160, .status = 1, .callback = &but4_callback, .image = sanfona };
+
+	
+	
+  t_but botoes[] = {but0, but1, but2, but3, but4};
+
+  
   draw_screen();
-  draw_button(0);
+  for (int i = 0; i<sizeof(botoes); i++){
+	  draw_button_new(botoes[i]);
+  }
+  
+  
   
   // Escreve DEMO - BUT no LCD
   font_draw_text(&digital52, "DEMO - BUT", 0, 0, 1);
@@ -251,10 +348,16 @@ void task_lcd(void){
   // strut local para armazenar msg enviada pela task do mxt
   touchData touch;
   
+
+  
   while (true) {
     if (xQueueReceive( xQueueTouch, &(touch), ( TickType_t )  500 / portTICK_PERIOD_MS)) {
-      update_screen(touch.x, touch.y);
-      printf("x:%d y:%d\n", touch.x, touch.y);
+	    //update_screen(touch.x, touch.y);
+		int but_index = process_touch(botoes, touch);
+		if (but_index >= 0){
+			botoes[but_index].callback(&botoes[but_index]);
+		}
+	    printf("x:%d y:%d\n", touch.x, touch.y);
     }
   }
 }
