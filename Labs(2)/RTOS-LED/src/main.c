@@ -5,15 +5,35 @@
 #include <asf.h>
 #include "conf_board.h"
 
+#define LED1_PIO			PIOA
+#define LED1_PIO_ID			ID_PIOA
+#define LED1_PIO_IDX		0
+#define LED1_PIO_IDX_MASK	(1 << LED1_PIO_IDX)
+
+#define LED2_PIO PIOC
+#define LED2_PIO_ID ID_PIOC
+#define LED2_IDX 30
+#define LED2_PIO_IDX_MASK (1 << LED2_IDX)
+
+#define LED3_PIO PIOB
+#define LED3_PIO_ID ID_PIOB
+#define LED3_IDX 2
+#define LED3_PIO_IDX_MASK (1 << LED3_IDX)
+
 #define BUT1_PIO            PIOD
 #define BUT1_PIO_ID         16
 #define BUT1_PIO_IDX        28
 #define BUT1_PIO_IDX_MASK   (1u << BUT1_PIO_IDX)
 
-#define LED1_PIO			PIOA
-#define LED1_PIO_ID			ID_PIOA
-#define LED1_PIO_IDX		0
-#define LED1_PIO_IDX_MASK	(1 << LED1_PIO_IDX)
+#define BUT2_PIO PIOC
+#define BUT2_PIO_ID ID_PIOC
+#define BUT2_PIO_IDX 31
+#define BUT2_PIO_IDX_MASK (1u << BUT2_PIO_IDX)
+
+#define BUT3_PIO PIOA
+#define BUT3_PIO_ID ID_PIOA
+#define BUT3_IDX 19
+#define BUT3_PIO_IDX_MASK (1 << BUT3_IDX)
 
 
 #define TASK_MONITOR_STACK_SIZE            (2048/sizeof(portSTACK_TYPE))
@@ -24,6 +44,9 @@
 #define TASK_LED1_STACK_PRIORITY (tskIDLE_PRIORITY)
 
 SemaphoreHandle_t xSemaphore;
+SemaphoreHandle_t xSemaphore2;
+SemaphoreHandle_t xSemaphore3;
+
 
 extern void vApplicationStackOverflowHook(xTaskHandle *pxTask,
 		signed char *pcTaskName);
@@ -34,9 +57,23 @@ extern void xPortSysTickHandler(void);
 
 void but1_callback(void){
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-	printf("but_callback \n");
+	printf("but_callback 1 \n");
 	xSemaphoreGiveFromISR(xSemaphore, &xHigherPriorityTaskWoken);
 	printf("semafaro tx \n");
+}
+
+void but2_callback(void){
+	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+	printf("but_callback 2\n");
+	xSemaphoreGiveFromISR(xSemaphore2, &xHigherPriorityTaskWoken);
+	printf("semafaro tx 2\n");
+}
+
+void but3_callback(void){
+	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+	printf("but_callback 3\n");
+	xSemaphoreGiveFromISR(xSemaphore3, &xHigherPriorityTaskWoken);
+	printf("semafaro tx 3\n");
 }
 
 
@@ -147,6 +184,67 @@ static void task_led1(void *pvParameters)
 	}
 }
 
+static void task_led2(void *pvParameters)
+{
+	pmc_enable_periph_clk(LED2_PIO_ID);
+	pio_configure(LED2_PIO, PIO_OUTPUT_0, LED2_PIO_IDX_MASK, PIO_DEFAULT);
+	xSemaphore2 = xSemaphoreCreateBinary();
+	pmc_enable_periph_clk(BUT2_PIO_ID);
+	pio_configure(BUT2_PIO, PIO_INPUT, BUT2_PIO_IDX_MASK, PIO_PULLUP);
+	pio_handler_set(BUT2_PIO, BUT2_PIO_ID, BUT2_PIO_IDX_MASK, PIO_IT_FALL_EDGE, but2_callback);
+	pio_enable_interrupt(BUT2_PIO, BUT2_PIO_IDX_MASK);
+	NVIC_EnableIRQ(BUT2_PIO_ID);
+	NVIC_SetPriority(BUT2_PIO_ID, 4);
+	
+	//UNUSED(pvParameters);
+	const TickType_t xDelay = 2000 / portTICK_PERIOD_MS;
+	
+	if (xSemaphore2 == NULL)
+	printf("falha em criar o semaforo \n");
+
+	for (;;) {
+		if( xSemaphoreTake(xSemaphore2, ( TickType_t ) 500) == pdTRUE ){
+			for (uint i=0; i<5; i++){
+				pio_clear(LED2_PIO, LED2_PIO_IDX_MASK);
+				vTaskDelay(200 / portTICK_PERIOD_MS);
+				pio_set(LED2_PIO, LED2_PIO_IDX_MASK);
+				vTaskDelay(200 / portTICK_PERIOD_MS);
+			}
+			vTaskDelay(xDelay);
+		}
+	}
+}
+static void task_led3(void *pvParameters)
+{
+	pmc_enable_periph_clk(LED3_PIO_ID);
+	pio_configure(LED3_PIO, PIO_OUTPUT_0, LED3_PIO_IDX_MASK, PIO_DEFAULT);
+	xSemaphore3 = xSemaphoreCreateBinary();
+	pmc_enable_periph_clk(BUT3_PIO_ID);
+	pio_configure(BUT3_PIO, PIO_INPUT, BUT3_PIO_IDX_MASK, PIO_PULLUP);
+	pio_handler_set(BUT3_PIO, BUT3_PIO_ID, BUT3_PIO_IDX_MASK, PIO_IT_FALL_EDGE, but3_callback);
+	pio_enable_interrupt(BUT3_PIO, BUT3_PIO_IDX_MASK);
+	NVIC_EnableIRQ(BUT3_PIO_ID);
+	NVIC_SetPriority(BUT3_PIO_ID, 4);
+	
+	//UNUSED(pvParameters);
+	const TickType_t xDelay = 2000 / portTICK_PERIOD_MS;
+	
+	if (xSemaphore3 == NULL)
+	printf("falha em criar o semaforo \n");
+
+	for (;;) {
+		if( xSemaphoreTake(xSemaphore3, ( TickType_t ) 500) == pdTRUE ){
+			for (uint i=0; i<5; i++){
+				pio_clear(LED3_PIO, LED3_PIO_IDX_MASK);
+				vTaskDelay(200 / portTICK_PERIOD_MS);
+				pio_set(LED3_PIO, LED3_PIO_IDX_MASK);
+				vTaskDelay(200 / portTICK_PERIOD_MS);
+			}
+			vTaskDelay(xDelay);
+		}
+	}
+}
+
 /**
  * \brief Configure the console UART.
  */
@@ -210,8 +308,17 @@ int main(void)
 	
 	if 	(xTaskCreate(task_led1, "Led1", TASK_LED1_STACK_SIZE, NULL, TASK_LED1_STACK_PRIORITY, NULL)
  != pdPASS) {
-		printf("Failed to create test led task\r\n");
+		printf("Failed to create test led task 1\r\n");
 	}
+	if 	(xTaskCreate(task_led2, "Led2", TASK_LED1_STACK_SIZE, NULL, TASK_LED1_STACK_PRIORITY, NULL)
+	!= pdPASS) {
+		printf("Failed to create test led task 2\r\n");
+	}
+	if 	(xTaskCreate(task_led3, "Led3", TASK_LED1_STACK_SIZE, NULL, TASK_LED1_STACK_PRIORITY, NULL)
+	!= pdPASS) {
+		printf("Failed to create test led task 3\r\n");
+	}
+
 
 
 	/* Start the scheduler. */
