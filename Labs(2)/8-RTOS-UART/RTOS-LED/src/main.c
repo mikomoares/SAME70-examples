@@ -9,7 +9,7 @@
 
 #define LED1_PIO			PIOA
 #define LED1_PIO_ID			ID_PIOA
-#define LED1_PIO_IDX		0
+#definemi LED1_PIO_IDX		0
 #define LED1_PIO_IDX_MASK	(1 << LED1_PIO_IDX)
 
 #define LED2_PIO PIOC
@@ -178,7 +178,7 @@ static void task_executa(void *pvParameters){
 	
 	for (;;){
 		if (xQueueReceive(xQueueExecuta, &buffer,(TickType_t)500)){
-			printf("cu %s \n",buffer);
+			printf("comando %s \n",buffer);
 			
 			if (strcmp(buffer, "led 1 on") == 0){
 				inst = 1;
