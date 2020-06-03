@@ -48,9 +48,9 @@ extern "C" {
 #include "driver/include/m2m_wifi.h"
 
 /** Wi-Fi Settings */
-#define MAIN_WLAN_SSID                    "Peridot" /**< Destination SSID */
+#define MAIN_WLAN_SSID                    "Sniffer" /**< Destination SSID */
 #define MAIN_WLAN_AUTH                    M2M_WIFI_SEC_WPA_PSK /**< Security manner */
-#define MAIN_WLAN_PSK                     "moraes842" /**< Password for Destination SSID */
+#define MAIN_WLAN_PSK                     "sim" /**< Password for Destination SSID */
 
 /** Using broadcast address for simplicity. */
 #define MAIN_SERVER_PORT                    (5000)
